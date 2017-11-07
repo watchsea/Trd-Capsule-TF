@@ -20,19 +20,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import gzip
-
 import numpy
 from six.moves import xrange  # pylint: disable=redefined-builtin
 
 import csv
-import os
-from os import path
 from glob import glob
-from datetime import datetime
 
 import numpy as np
-from six.moves import urllib
 from config import cfg
 from tensorflow.python.platform import gfile
 
@@ -93,7 +87,7 @@ def get_csv_data1(filename,
             features_dtype:  datatype of the features
             datalen:  the length of data
         Returns:
-            train_images:  feature 2D array [Index,900]
+            train_images:  feature 4D array [Index,25,25,1]
             train_labels:  label 1D array  [Index]
     """
     idx = -1
@@ -102,7 +96,7 @@ def get_csv_data1(filename,
         data = numpy.loadtxt(open(filename), dtype=features_dtype,delimiter=",", skiprows=1, usecols=(2, 3, 4, 5, 6))
         n_samples = data.shape[0]  #int(header[0])
         n_features = data.shape[1] #header.shape[0] - 2
-        #print("my_matrix:", data.shape, ",n_sampes:",n_samples,",n_features:",n_features )
+        #print("data:", data.shape, ",n_sampes:",n_samples,",n_features:",n_features )
         train_images = np.zeros((n_samples - datalen - LBLPOSTNUM+1, datalen * n_features), dtype=features_dtype)
         train_labels = np.zeros(n_samples - datalen - LBLPOSTNUM+1, dtype=target_dtype)
 
@@ -361,13 +355,13 @@ def read_data_sets(train_dir,
         return base.Datasets(train=train, validation=validation, test=test)
 
     train_file = glob(train_dir)
-    print(train_file)
+    #print(train_file)
     train_images, train_labels = extract_images(train_file)
     train_labels = extract_labels(train_labels, one_hot=one_hot)
     print(train_images.shape)
 
     #TEST_IMAGES = (['test_data/rb.HOT.15m(1).csv'])
-    test_file = glob("test_data/rb.HOT.15m(1).csv")
+    test_file = glob(cfg.test_dataset)
     test_images, test_labels = extract_images(test_file)
     test_labels = extract_labels(test_labels, one_hot=one_hot)
 
