@@ -9,7 +9,6 @@ epsilon = 1e-9
 image_size = cfg.image_size
 label_num = cfg.label_num
 
-
 class CapsNet(object):
     def __init__(self, is_training=True):
         self.graph = tf.Graph()
