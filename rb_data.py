@@ -29,6 +29,7 @@ import csv
 import os
 from os import path
 from glob import glob
+from datetime import datetime
 
 import numpy as np
 from six.moves import urllib
@@ -97,18 +98,15 @@ def get_csv_data1(filename,
     """
     idx = -1
     with gfile.Open(filename) as csv_file:
-        data_file = csv.reader(csv_file)  # DictReader
-        header = next(data_file)
-        header = np.asarray(header)
-        n_samples = int(header[0])
-        n_features = header.shape[0] - 2
-        data = np.zeros((n_samples, n_features), dtype=features_dtype)
+        # read data according to the file name
+        data = numpy.loadtxt(open(filename), dtype=features_dtype,delimiter=",", skiprows=1, usecols=(2, 3, 4, 5, 6))
+        n_samples = data.shape[0]  #int(header[0])
+        n_features = data.shape[1] #header.shape[0] - 2
+        #print("my_matrix:", data.shape, ",n_sampes:",n_samples,",n_features:",n_features )
         train_images = np.zeros((n_samples - datalen - LBLPOSTNUM+1, datalen * n_features), dtype=features_dtype)
         train_labels = np.zeros(n_samples - datalen - LBLPOSTNUM+1, dtype=target_dtype)
-        for i, row in enumerate(data_file):
-            data[i] = np.asarray((row[2], row[3], row[4], row[5], row[6]), features_dtype)
-            # print(" i = %d row = %s " % (i,row))
-            #
+
+        #deal the data one by one
         for i, d in enumerate(data):
             if i >= datalen and i <= data.shape[0] - LBLPOSTNUM:
                 fArr1 = diverse_standard_comp(data[i - datalen:i, :], 0)  # open
@@ -125,7 +123,6 @@ def get_csv_data1(filename,
                 # deal the target category (one-shot = ture)
                 tArr = data[i - datalen:i + LBLPOSTNUM, :]  # the column to calculate the profit
                 label_data = deal_label(tArr, datalen)
-
 
                 idx += 1
                 train_images[idx] = np.concatenate((f1, f2, f3, f4, f5), axis=1)
@@ -411,7 +408,7 @@ def read_test_sets(filename,
 
 # %%
 
-def load_data(train_dir='RB_data'):
+def load_data(train_dir='train_data'):
     return read_data_sets(train_dir)
 
 
@@ -446,11 +443,6 @@ def get_csv_data2(filename,
 
         for i, d in enumerate(data):
             if i >= datalen:
-                # deal the features
-                #                fArr1 = diverse_standard(data[i-datalen:i,0])   #open
-                #                fArr2 = diverse_standard(data[i-datalen:i,1])     #high
-                #                fArr3 = diverse_standard(data[i-datalen:i,2])     #low
-                #                fArr4 = diverse_standard(data[i-datalen:i,3])     #close
                 fArr1 = diverse_standard_comp(data[i - datalen:i, :], 0)  # open
                 fArr2 = diverse_standard_comp(data[i - datalen:i, :], 1)  # high
                 fArr3 = diverse_standard_comp(data[i - datalen:i, :], 2)  # low
