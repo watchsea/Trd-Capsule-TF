@@ -6,6 +6,8 @@ from capsLayer import CapsLayer
 
 
 epsilon = 1e-9
+image_size = cfg.image_size
+label_num = cfg.label_num
 
 
 class CapsNet(object):
@@ -14,7 +16,7 @@ class CapsNet(object):
         with self.graph.as_default():
             if is_training:
                 self.X, self.labels = get_batch_data()
-                self.Y = tf.one_hot(self.labels, depth=10, axis=1, dtype=tf.float32)
+                self.Y = tf.one_hot(self.labels, depth=label_num, axis=1, dtype=tf.float32)
 
                 self.build_arch()
                 self.loss()
@@ -26,21 +28,21 @@ class CapsNet(object):
                 self.train_op = self.optimizer.minimize(self.total_loss, global_step=self.global_step)  # var_list=t_vars)
             elif cfg.mask_with_y:
                 self.X = tf.placeholder(tf.float32,
-                                        shape=(cfg.batch_size, 28, 28, 1))
-                self.Y = tf.placeholder(tf.float32, shape=(cfg.batch_size, 10, 1))
+                                        shape=(cfg.batch_size, image_size, image_size, 1))
+                self.Y = tf.placeholder(tf.float32, shape=(cfg.batch_size, label_num, 1))
                 self.build_arch()
             else:
                 self.X = tf.placeholder(tf.float32,
-                                        shape=(cfg.batch_size, 28, 28, 1))
+                                        shape=(cfg.batch_size, image_size, image_size, 1))
                 self.build_arch()
 
         tf.logging.info('Seting up the main structure')
 
     def build_arch(self):
         with tf.variable_scope('Conv1_layer'):
-            # Conv1, [batch_size, 20, 20, 256]
+            # Conv1, [batch_size, 20, 20, 256]    Kernel_size change from 9 to 6
             conv1 = tf.contrib.layers.conv2d(self.X, num_outputs=256,
-                                             kernel_size=9, stride=1,
+                                             kernel_size=6, stride=1,
                                              padding='VALID')
             assert conv1.get_shape() == [cfg.batch_size, 20, 20, 256]
 
@@ -52,7 +54,7 @@ class CapsNet(object):
 
         # DigitCaps layer, return [batch_size, 10, 16, 1]
         with tf.variable_scope('DigitCaps_layer'):
-            digitCaps = CapsLayer(num_outputs=10, vec_len=16, with_routing=True, layer_type='FC')
+            digitCaps = CapsLayer(num_outputs=label_num, vec_len=16, with_routing=True, layer_type='FC')
             self.caps2 = digitCaps(caps1)
 
         # Decoder structure in Fig. 2
@@ -63,7 +65,7 @@ class CapsNet(object):
             self.v_length = tf.sqrt(tf.reduce_sum(tf.square(self.caps2),
                                                   axis=2, keep_dims=True) + epsilon)
             self.softmax_v = tf.nn.softmax(self.v_length, dim=1)
-            assert self.softmax_v.get_shape() == [cfg.batch_size, 10, 1, 1]
+            assert self.softmax_v.get_shape() == [cfg.batch_size, label_num, 1, 1]
 
             # b). pick out the index of max softmax val of the 10 caps
             # [batch_size, 10, 1, 1] => [batch_size] (index)
@@ -85,7 +87,7 @@ class CapsNet(object):
                 assert self.masked_v.get_shape() == [cfg.batch_size, 1, 16, 1]
             # Method 2. masking with true label, default mode
             else:
-                self.masked_v = tf.matmul(tf.squeeze(self.caps2), tf.reshape(self.Y, (-1, 10, 1)), transpose_a=True)
+                self.masked_v = tf.matmul(tf.squeeze(self.caps2), tf.reshape(self.Y, (-1, label_num, 1)), transpose_a=True)
                 self.v_length = tf.sqrt(tf.reduce_sum(tf.square(self.caps2), axis=2, keep_dims=True) + epsilon)
 
         # 2. Reconstructe the MNIST images with 3 FC layers
@@ -106,7 +108,7 @@ class CapsNet(object):
         max_l = tf.square(tf.maximum(0., cfg.m_plus - self.v_length))
         # max_r = max(0, ||v_c||-m_minus)^2
         max_r = tf.square(tf.maximum(0., self.v_length - cfg.m_minus))
-        assert max_l.get_shape() == [cfg.batch_size, 10, 1, 1]
+        assert max_l.get_shape() == [cfg.batch_size, label_num, 1, 1]
 
         # reshape: [batch_size, 10, 1, 1] => [batch_size, 10]
         max_l = tf.reshape(max_l, shape=(cfg.batch_size, -1))
@@ -138,14 +140,10 @@ class CapsNet(object):
         train_summary.append(tf.summary.scalar('train/margin_loss', self.margin_loss))
         train_summary.append(tf.summary.scalar('train/reconstruction_loss', self.reconstruction_err))
         train_summary.append(tf.summary.scalar('train/total_loss', self.total_loss))
-        recon_img = tf.reshape(self.decoded, shape=(cfg.batch_size, 28, 28, 1))
+        recon_img = tf.reshape(self.decoded, shape=(cfg.batch_size, image_size, image_size, 1))
         train_summary.append(tf.summary.image('reconstruction_img', recon_img))
+        self.train_summary = tf.summary.merge(train_summary)
 
         correct_prediction = tf.equal(tf.to_int32(self.labels), self.argmax_idx)
         self.batch_accuracy = tf.reduce_sum(tf.cast(correct_prediction, tf.float32))
         self.test_acc = tf.placeholder_with_default(tf.constant(0.), shape=[])
-        test_summary = []
-        test_summary.append(tf.summary.scalar('test/accuracy', self.test_acc))
-
-        self.train_summary = tf.summary.merge(train_summary)
-        self.test_summary = tf.summary.merge(test_summary)
