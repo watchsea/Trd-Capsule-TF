@@ -33,7 +33,7 @@ from os import path
 
 import numpy as np
 from six.moves import urllib
-import config as cfg
+from config import cfg
 
 from tensorflow.contrib.framework import deprecated
 from tensorflow.python.platform import gfile
@@ -42,11 +42,12 @@ from tensorflow.contrib.learn.python.learn.datasets import base
 from tensorflow.python.framework import dtypes
 
 SOURCE_URL = 'http://yann.lecun.com/exdb/mnist/'
-DATALEN = cfg.data_peroid     #125
+DATALEN = cfg.data_period     #125
 LABELNUM = cfg.label_num   #19
 LBLPOSTNUM = cfg.label_post_num   # 20        #利用后面多少个数据来计算标签
 loss_ratio = cfg.loss_ratio  # 0.05
 profit_ratio =cfg.profit_ratio  # 0.20
+image_size = cfg.image_size
 
 def _read32(bytestream):
     dt = numpy.dtype(numpy.uint32).newbyteorder('>')
@@ -135,7 +136,10 @@ def get_csv_data1(filename,
                 train_labels[idx] = label_data
     if fileout:
         out_indi_data(filename,train_labels,"mc_label/",datalen)
-    return train_images[:idx + 1, ], train_labels[:idx + 1, ]
+    trn_images = train_images[:idx+1,]
+    trn_images = trn_images.reshape([-1,image_size,image_size,1])
+    trn_labels = train_labels[:idx+1,]
+    return trn_images,trn_labels
 
 
 # %%
@@ -365,16 +369,16 @@ def read_data_sets(train_dir,
 
     TRAIN_IMAGES = ([
         'train_data/rb.HOT.5m.csv',
-        'train_data/rb.HOT.15m.csv'
-        , 'train_data/rb.HOT.30m.csv', 'train_data/rb.HOT.60m.csv'
-        , 'train_data/rb.HOT.1d.csv', 'train_data/rb.0000.5m.csv'
-        , 'train_data/rb.0000.15m.csv', 'train_data/rb.0000.30m.csv'
-        , 'train_data/rb.0000.60m.csv', 'train_data/rb.0000.1d.csv'
-
-        , 'train_data/ag.HOT.5m.csv', 'train_data/ag.HOT.15m.csv'
-        , 'train_data/ag.HOT.30m.csv', 'train_data/ag.HOT.60m.csv'
-        , 'train_data/ag.0000.5m.csv', 'train_data/ag.0000.15m.csv'
-        , 'train_data/ag.0000.30m.csv', 'train_data/ag.0000.60m.csv'
+        # 'train_data/rb.HOT.15m.csv'
+        # , 'train_data/rb.HOT.30m.csv', 'train_data/rb.HOT.60m.csv'
+        # , 'train_data/rb.HOT.1d.csv', 'train_data/rb.0000.5m.csv'
+        # , 'train_data/rb.0000.15m.csv', 'train_data/rb.0000.30m.csv'
+        # , 'train_data/rb.0000.60m.csv', 'train_data/rb.0000.1d.csv'
+        #
+        # , 'train_data/ag.HOT.5m.csv', 'train_data/ag.HOT.15m.csv'
+        # , 'train_data/ag.HOT.30m.csv', 'train_data/ag.HOT.60m.csv'
+        # , 'train_data/ag.0000.5m.csv', 'train_data/ag.0000.15m.csv'
+        # , 'train_data/ag.0000.30m.csv', 'train_data/ag.0000.60m.csv'
 
         # , 'train_data/CFFEX.IF.HOT.5m.csv', 'train_data/CFFEX.IF.HOT.15m.csv'
         # , 'train_data/CFFEX.IF.HOT.30m.csv'
@@ -386,16 +390,16 @@ def read_data_sets(train_dir,
         # , 'train_data/au.HOT.15m.csv', 'train_data/au.HOT.30m.csv'
         # , 'train_data/au.HOT.60m.csv', 'train_data/au.HOT.5m.csv'
 
-        , 'train_data/ru.HOT.1d.csv', 'train_data/ru.HOT.5m.csv'
-        , 'train_data/ru.HOT.15m.csv', 'train_data/ru.HOT.30m.csv'
-        , 'train_data/ru.HOT.60m.csv'
-        , 'train_data/ru.0000.1d.csv', 'train_data/ru.0000.5m.csv'
-        , 'train_data/ru.0000.15m.csv', 'train_data/ru.0000.30m.csv'
-        , 'train_data/ru.0000.60m.csv'
-        , 'train_data/cu.HOT.5m.csv', 'train_data/cu.HOT.15m.csv'
-        , 'train_data/cu.HOT.30m.csv', 'train_data/cu.HOT.60m.csv'
-        , 'train_data/cu.0000.5m.csv', 'train_data/cu.0000.15m.csv'
-        , 'train_data/cu.0000.30m.csv', 'train_data/cu.0000.60m.csv'
+        # , 'train_data/ru.HOT.1d.csv', 'train_data/ru.HOT.5m.csv'
+        # , 'train_data/ru.HOT.15m.csv', 'train_data/ru.HOT.30m.csv'
+        # , 'train_data/ru.HOT.60m.csv'
+        # , 'train_data/ru.0000.1d.csv', 'train_data/ru.0000.5m.csv'
+        # , 'train_data/ru.0000.15m.csv', 'train_data/ru.0000.30m.csv'
+        # , 'train_data/ru.0000.60m.csv'
+        # , 'train_data/cu.HOT.5m.csv', 'train_data/cu.HOT.15m.csv'
+        # , 'train_data/cu.HOT.30m.csv', 'train_data/cu.HOT.60m.csv'
+        # , 'train_data/cu.0000.5m.csv', 'train_data/cu.0000.15m.csv'
+        # , 'train_data/cu.0000.30m.csv', 'train_data/cu.0000.60m.csv'
     ])
 
     # TRAIN_LABELS = 'train-labels-idx1-ubyte.gz'
@@ -408,6 +412,7 @@ def read_data_sets(train_dir,
     local_file = TRAIN_IMAGES
     train_images, train_labels = extract_images(local_file)
     train_labels = extract_labels(train_labels, one_hot=one_hot)
+    print(train_images.shape)
 
     # local_file = base.maybe_download(TEST_IMAGES, train_dir,
     # SOURCE_URL + TEST_IMAGES)

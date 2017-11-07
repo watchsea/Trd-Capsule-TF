@@ -40,7 +40,7 @@ flags.DEFINE_string('results', 'results', 'path for saving results')
 ############################
 flags.DEFINE_integer('image_size',25,'image size')
 flags.DEFINE_integer('label_num',19,'laber number')
-flags.DEFINE_integer('data_peroid',125,'sample data period')
+flags.DEFINE_integer('data_period',125,'sample data period')
 flags.DEFINE_integer('label_post_num',20,'the post period of data to calculate the profit')
 flags.DEFINE_float('loss_ratio',0.05,'the maximum loss ratio')
 flags.DEFINE_float('profit_ratio', 0.20, 'the minium profit ratio')

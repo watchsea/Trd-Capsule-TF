@@ -16,7 +16,7 @@ class CapsNet(object):
             if is_training:
                 self.X, self.labels = get_batch_data()
                 self.Y = tf.one_hot(self.labels, depth=label_num, axis=1, dtype=tf.float32)
-
+                print(self.X.shape)
                 self.build_arch()
                 self.loss()
                 self._summary()
@@ -97,7 +97,7 @@ class CapsNet(object):
             assert fc1.get_shape() == [cfg.batch_size, 512]
             fc2 = tf.contrib.layers.fully_connected(fc1, num_outputs=1024)
             assert fc2.get_shape() == [cfg.batch_size, 1024]
-            self.decoded = tf.contrib.layers.fully_connected(fc2, num_outputs=784, activation_fn=tf.sigmoid)
+            self.decoded = tf.contrib.layers.fully_connected(fc2, num_outputs=image_size*image_size, activation_fn=tf.sigmoid)
 
     def loss(self):
         # 1. The margin loss

@@ -29,9 +29,9 @@ def main(_):
             sv.saver.restore(sess,ckpt.model_checkpoint_path)
             initial_step = int(ckpt.model_checkpoint_path.split('_')[4])
             print(ckpt, ckpt.model_checkpoint_path,initial_step)
-        num_batch = int(60000 / cfg.batch_size)
-        num_test_batch = 10000 // cfg.batch_size
+        num_batch = int(93060 / cfg.batch_size)
         teX, teY = load_mnist(cfg.dataset, False)
+        num_test_batch = teX.shape[0] // cfg.batch_size
         for epoch in range(cfg.epoch):
             if sv.should_stop():
                 break
