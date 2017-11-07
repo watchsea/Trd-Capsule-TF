@@ -23,6 +23,12 @@ def main(_):
     fd_results = open(path, 'w')
     fd_results.write('step,test_acc\n')
     with sv.managed_session() as sess:
+
+        ckpt = tf.train.get_checkpoint_state(cfg.logdir)
+        if ckpt and ckpt.model_checkpoint_path:
+            sv.saver.restore(sess,ckpt.model_checkpoint_path)
+            initial_step = int(ckpt.model_checkpoint_path.split('_')[4])
+            print(ckpt, ckpt.model_checkpoint_path,initial_step)
         num_batch = int(60000 / cfg.batch_size)
         num_test_batch = 10000 // cfg.batch_size
         teX, teY = load_mnist(cfg.dataset, False)
@@ -46,8 +52,6 @@ def main(_):
                     test_acc = test_acc / (cfg.batch_size * num_test_batch)
                     fd_results.write(str(global_step + 1) + ',' + str(test_acc) + '\n')
                     fd_results.flush()
-                    summary_str = sess.run(capsNet.test_summary, {capsNet.test_acc: test_acc})
-                    sv.summary_writer.add_summary(summary_str, global_step)
 
             if epoch % cfg.save_freq == 0:
                 sv.saver.save(sess, cfg.logdir + '/model_epoch_%04d_step_%02d' % (epoch, global_step))
