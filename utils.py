@@ -9,13 +9,13 @@ import rb_data
 
 def load_mnist(path, is_training):
     if is_training:
-        data = rb_data.read_data_sets("",one_hot=True)
-        trX = data.train.train_images
-        trY = data.train.train_labels
+        data = rb_data.read_data_sets("",one_hot=False)
+        trX = data.train.images
+        trY = data.train.labels
         return trX, trY
     else:
-        TEST_IMAGES = (['test_data/rb.HOT.15m(1).csv'])
-        data = rb_data.read_test_sets(TEST_IMAGES,one_hot=True)
+        TEST_IMAGES = 'test_data/rb.HOT.15m(1).csv'
+        data = rb_data.read_test_sets(TEST_IMAGES,one_hot=False)
         teX = data.images
         teY = data.labels
         return teX, teY
