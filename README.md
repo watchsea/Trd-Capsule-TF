@@ -9,8 +9,6 @@ A Tensorflow implementation of CapsNet based on Geoffrey Hinton's paper [Dynamic
 
 > **Status:**
 > 1. The capsule of MNIST version is finished. Now we have two version:
->    a) tag v0.1, not work well due to Issue #8
->    b) and the current version
 
 > **Daily task**
 > 1. multi-GPU support
@@ -24,6 +22,10 @@ A Tensorflow implementation of CapsNet based on Geoffrey Hinton's paper [Dynamic
 - [Tensorflow](https://github.com/tensorflow/tensorflow) (I'm using 1.3.0, not yet tested for older version)
 - tqdm (for displaying training progress info)
 - scipy (for saving images)
+
+## Author Info
+QQ:328485771
+
 
 
 
