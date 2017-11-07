@@ -25,7 +25,8 @@ flags.DEFINE_float('regularization_scale', 0.392, 'regularization coefficient fo
 ############################
 #   environment setting    #
 ############################
-flags.DEFINE_string('dataset', 'E:\study\data\mnist', 'the path for dataset')   #data/mnist
+flags.DEFINE_string('dataset', 'train_data/*.0000.15m.csv', 'the path for train dataset')   #data/mnist
+flags.DEFINE_string('test_dataset', 'test_data/rb.HOT.15m(1).csv', 'the path for test dataset')   #data/mnist
 flags.DEFINE_boolean('is_training', True, 'train or predict phase')
 flags.DEFINE_integer('num_threads', 8, 'number of threads of enqueueing exampls')
 flags.DEFINE_string('logdir', 'logdir', 'logs directory')
