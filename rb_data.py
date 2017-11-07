@@ -25,23 +25,19 @@ import gzip
 import numpy
 from six.moves import xrange  # pylint: disable=redefined-builtin
 
-import collections
-from collections import namedtuple
 import csv
 import os
 from os import path
+from glob import glob
 
 import numpy as np
 from six.moves import urllib
 from config import cfg
-
-from tensorflow.contrib.framework import deprecated
 from tensorflow.python.platform import gfile
 
 from tensorflow.contrib.learn.python.learn.datasets import base
 from tensorflow.python.framework import dtypes
 
-SOURCE_URL = 'http://yann.lecun.com/exdb/mnist/'
 DATALEN = cfg.data_period     #125
 LABELNUM = cfg.label_num   #19
 LBLPOSTNUM = cfg.label_post_num   # 20        #利用后面多少个数据来计算标签
@@ -367,58 +363,15 @@ def read_data_sets(train_dir,
         test = fake()
         return base.Datasets(train=train, validation=validation, test=test)
 
-    TRAIN_IMAGES = ([
-        'train_data/rb.HOT.5m.csv',
-        # 'train_data/rb.HOT.15m.csv'
-        # , 'train_data/rb.HOT.30m.csv', 'train_data/rb.HOT.60m.csv'
-        # , 'train_data/rb.HOT.1d.csv', 'train_data/rb.0000.5m.csv'
-        # , 'train_data/rb.0000.15m.csv', 'train_data/rb.0000.30m.csv'
-        # , 'train_data/rb.0000.60m.csv', 'train_data/rb.0000.1d.csv'
-        #
-        # , 'train_data/ag.HOT.5m.csv', 'train_data/ag.HOT.15m.csv'
-        # , 'train_data/ag.HOT.30m.csv', 'train_data/ag.HOT.60m.csv'
-        # , 'train_data/ag.0000.5m.csv', 'train_data/ag.0000.15m.csv'
-        # , 'train_data/ag.0000.30m.csv', 'train_data/ag.0000.60m.csv'
-
-        # , 'train_data/CFFEX.IF.HOT.5m.csv', 'train_data/CFFEX.IF.HOT.15m.csv'
-        # , 'train_data/CFFEX.IF.HOT.30m.csv'
-        # , 'train_data/CFFEX.IF.HOT.60m.csv'
-        # , 'train_data/CFFEX.IF.0000.5m.csv', 'train_data/CFFEX.IF.0000.15m.csv'
-        # , 'train_data/CFFEX.IF.0000.30m.csv'
-        # , 'train_data/CFFEX.IF.0000.60m.csv'
-        #
-        # , 'train_data/au.HOT.15m.csv', 'train_data/au.HOT.30m.csv'
-        # , 'train_data/au.HOT.60m.csv', 'train_data/au.HOT.5m.csv'
-
-        # , 'train_data/ru.HOT.1d.csv', 'train_data/ru.HOT.5m.csv'
-        # , 'train_data/ru.HOT.15m.csv', 'train_data/ru.HOT.30m.csv'
-        # , 'train_data/ru.HOT.60m.csv'
-        # , 'train_data/ru.0000.1d.csv', 'train_data/ru.0000.5m.csv'
-        # , 'train_data/ru.0000.15m.csv', 'train_data/ru.0000.30m.csv'
-        # , 'train_data/ru.0000.60m.csv'
-        # , 'train_data/cu.HOT.5m.csv', 'train_data/cu.HOT.15m.csv'
-        # , 'train_data/cu.HOT.30m.csv', 'train_data/cu.HOT.60m.csv'
-        # , 'train_data/cu.0000.5m.csv', 'train_data/cu.0000.15m.csv'
-        # , 'train_data/cu.0000.30m.csv', 'train_data/cu.0000.60m.csv'
-    ])
-
-    # TRAIN_LABELS = 'train-labels-idx1-ubyte.gz'
-    TEST_IMAGES = (['test_data/rb.HOT.15m(1).csv'])
-    # TEST_LABELS = 't10k-labels-idx1-ubyte.gz'
-
-    # local_file = base.maybe_download(TRAIN_IMAGES, train_dir,
-    # SOURCE_URL + TRAIN_IMAGES)
-    # with open(local_file, 'rb') as f:
-    local_file = TRAIN_IMAGES
-    train_images, train_labels = extract_images(local_file)
+    train_file = glob(train_dir)
+    print(train_file)
+    train_images, train_labels = extract_images(train_file)
     train_labels = extract_labels(train_labels, one_hot=one_hot)
     print(train_images.shape)
 
-    # local_file = base.maybe_download(TEST_IMAGES, train_dir,
-    # SOURCE_URL + TEST_IMAGES)
-    # with open(local_file, 'rb') as f:
-    local_file = TEST_IMAGES
-    test_images, test_labels = extract_images(local_file)
+    #TEST_IMAGES = (['test_data/rb.HOT.15m(1).csv'])
+    test_file = glob("test_data/rb.HOT.15m(1).csv")
+    test_images, test_labels = extract_images(test_file)
     test_labels = extract_labels(test_labels, one_hot=one_hot)
 
     if not 0 <= validation_size <= len(train_images):
